@@ -89,14 +89,15 @@ def downloadPost(xmlLink, path):
         postCount += 1
         subImgCount = 0
 
-def main(user, postid=None):
+def main(user, postids=None):
     apiLink = 'http://%s.tumblr.com/api/read?' % user
-    if postid:#
-        apiLink += 'id=%s' % postid
-        print(apiLink)
-        downloadPost(apiLink, path)
+    path = mkdir(user)
+    if postids:#
+        for postid in postids:
+            args = 'id=%s' % postid
+            print(apiLink + args)
+            downloadPost(apiLink + args, path)
     else:
-        path = mkdir(user)
         total = getTotalPost(getXml(apiLink))
         cur = 0
         while total > 0:
@@ -117,6 +118,6 @@ if __name__ == '__main__':
     if len(args) == 1:
         main(args[0])
     elif len(args) >= 2:
-        main(args[0], args[1])
+        main(args[0], args[1:])
     else:
-        print('<username> [post_id]')
+        print('<username> [post_ids...]')
