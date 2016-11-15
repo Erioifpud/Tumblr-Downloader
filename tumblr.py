@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
 import urllib.request
 import urllib.error
+import argparse
 import re
 import os
-import sys
 
 # 获取link返回的xml代码
 def getXml(link):
@@ -89,7 +89,7 @@ def downloadPost(xmlLink, path):
         postCount += 1
         subImgCount = 0
 
-def main(user, postids=None):
+def main(user, postids=None, start=None, step=None):
     apiLink = 'http://%s.tumblr.com/api/read?' % user
     path = mkdir(user)
     if postids:#
@@ -98,8 +98,8 @@ def main(user, postids=None):
             print(apiLink + args)
             downloadPost(apiLink + args, path)
     else:
-        total = getTotalPost(getXml(apiLink))
-        cur = 0
+        total = step if step else getTotalPost(getXml(apiLink))
+        cur = start if start else 0
         while total > 0:
             if total >= 50:
                 args = 'start=%d&num=50' % cur
@@ -114,10 +114,13 @@ def main(user, postids=None):
                 total = 0
 
 if __name__ == '__main__':
-    args = sys.argv[1:]
-    if len(args) == 1:
-        main(args[0])
-    elif len(args) >= 2:
-        main(args[0], args[1:])
+    parser = argparse.ArgumentParser('tumblr.py')
+    parser.add_argument('-u', '--username', help='Tumblr用户名', required=True)
+    parser.add_argument('-p', '--post', help='指定post编号', nargs='+')
+    parser.add_argument('-s', '--start', help='起始位置')
+    parser.add_argument('-n', '--num', help='抓取个数，最多不超过50')
+    args = vars(parser.parse_args())
+    if args['post']:
+        main(args['username'], args['post'])
     else:
-        print('<username> [post_ids...]')
+        main(args['username'], start=args['start'], step=args['num'])
